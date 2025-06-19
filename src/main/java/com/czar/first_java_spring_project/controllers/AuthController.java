@@ -46,7 +46,7 @@ public class AuthController {
 
     @PostMapping("/sign-in")
     public ResponseEntity<SignInResponseDto> signIn(@RequestBody SignInRequestDto body) {
-        User user = this.userRepository.findUserByEmail(body.email()).orElseThrow(()-> new RuntimeException("Email Repository Or Password Invalid"));
+        User user = this.userRepository.findUserByEmail(body.email()).orElseThrow(()-> new RuntimeException("Email Or Password Invalid"));
 
         if(!this.passwordEncoder.matches(body.password(), user.getPassword())) {
             throw new RuntimeException("Email Or Password Invalid");
