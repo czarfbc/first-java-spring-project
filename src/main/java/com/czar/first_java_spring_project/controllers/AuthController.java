@@ -1,5 +1,7 @@
 package com.czar.first_java_spring_project.controllers;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.czar.first_java_spring_project.domain.User;
 import com.czar.first_java_spring_project.dto.request.SignInRequestDto;
 import com.czar.first_java_spring_project.dto.request.SignUpRequestDto;
@@ -55,6 +57,27 @@ public class AuthController {
         if(!this.passwordEncoder.matches(body.password(), user.getPassword())) {
             throw new RuntimeException("Email Or Password Invalid");
         }
+
+        Map<String, String> tokens = this.tokenService.generateToken(user);
+
+        String accessToken = tokens.get("accessToken");
+        String refreshToken = tokens.get("refreshToken");
+
+        return ResponseEntity.ok(new SignInResponseDto(accessToken, refreshToken, user.getName()));
+    }
+
+    @PostMapping("/refresh-token/{refreshToken}")
+    public ResponseEntity<SignInResponseDto> refreshToken(@PathVariable("refreshToken") String refreshTokenPath) {
+        DecodedJWT decodedJWT = JWT.decode(refreshTokenPath);
+
+        String subject = decodedJWT.getSubject();
+        String tokenType = decodedJWT.getClaim("type").asString();
+
+        if (!"refreshToken".equals(tokenType)) {
+            throw new RuntimeException("Invalid or missing token");
+        }
+
+        User user = this.userRepository.findUserByEmail(subject).orElseThrow(()-> new RuntimeException("Email Or Password Invalid"));
 
         Map<String, String> tokens = this.tokenService.generateToken(user);
 

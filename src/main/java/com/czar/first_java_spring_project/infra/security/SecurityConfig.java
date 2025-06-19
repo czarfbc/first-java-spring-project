@@ -31,6 +31,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/auth/sign-in").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/sign-up").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/refresh-token/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
