@@ -11,13 +11,15 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class TokenService {
     @Value("${api.security.token.secret}")
     private String secretTokenKey;
 
-    public String generateToken(User user) {
+    public Map<String, String> generateToken(User user) {
         try{
             Algorithm algorithm = Algorithm.HMAC256(this.secretTokenKey);
 
@@ -25,10 +27,23 @@ public class TokenService {
             token = JWT.create()
                     .withIssuer("first-app-java-spring")
                     .withSubject(user.getEmail())
-                    .withExpiresAt(this.generateExpireDate())
+                    .withClaim("type", "accessToken")
+                    .withExpiresAt(this.generateExpireDate(2))
                     .sign(algorithm);
 
-            return token;
+            String refreshToken;
+            refreshToken = JWT.create()
+                    .withIssuer("first-app-java-spring")
+                    .withSubject(user.getEmail())
+                    .withClaim("type", "refreshToken")
+                    .withExpiresAt(this.generateExpireDate(168))
+                    .sign(algorithm);
+
+            Map<String, String> tokens = new HashMap<>();
+            tokens.put("accessToken", token);
+            tokens.put("refreshToken", refreshToken);
+
+            return tokens;
         }
         catch (JWTCreationException exception){
             throw new RuntimeException("Error while authenticating");
@@ -52,7 +67,7 @@ public class TokenService {
         }
     }
 
-    private Instant generateExpireDate() {
-        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-3"));
+    private Instant generateExpireDate(int hours) {
+        return LocalDateTime.now().plusHours(hours).toInstant(ZoneOffset.of("-3"));
     }
 }

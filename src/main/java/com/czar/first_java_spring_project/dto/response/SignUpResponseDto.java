@@ -1,4 +1,4 @@
 package com.czar.first_java_spring_project.dto.response;
 
-public record SignUpResponseDto(String accessToken, String name) {
+public record SignUpResponseDto(String accessToken, String refreshToken, String name) {
 }

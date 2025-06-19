@@ -1,5 +1,6 @@
 package com.czar.first_java_spring_project.infra.security;
 
+import com.auth0.jwt.JWT;
 import com.czar.first_java_spring_project.domain.User;
 import com.czar.first_java_spring_project.repositories.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -31,6 +32,13 @@ public class SecurityFilter extends OncePerRequestFilter {
         String login = tokenService.validateToken(token);
 
         if(login != null) {
+            assert token != null;
+            String tokenType = JWT.decode(token).getClaim("type").asString();
+
+            if (!"accessToken".equals(tokenType)) {
+                throw new RuntimeException("Invalid or missing token");
+            }
+
             User user = userRepository.findUserByEmail(login).orElseThrow(() -> new RuntimeException("User Not Found"));
             List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);

@@ -8,11 +8,11 @@ import com.czar.first_java_spring_project.dto.response.SignUpResponseDto;
 import com.czar.first_java_spring_project.infra.security.TokenService;
 import com.czar.first_java_spring_project.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -40,8 +40,12 @@ public class AuthController {
 
         this.userRepository.save(newUser);
 
-        String token = this.tokenService.generateToken(newUser);
-        return ResponseEntity.ok(new SignUpResponseDto(token, newUser.getName()));
+        Map<String, String> tokens = this.tokenService.generateToken(newUser);
+
+        String accessToken = tokens.get("accessToken");
+        String refreshToken = tokens.get("refreshToken");
+
+        return ResponseEntity.ok(new SignUpResponseDto(accessToken, refreshToken, newUser.getName()));
     }
 
     @PostMapping("/sign-in")
@@ -52,8 +56,12 @@ public class AuthController {
             throw new RuntimeException("Email Or Password Invalid");
         }
 
-        String token = this.tokenService.generateToken(user);
-        return ResponseEntity.ok(new SignInResponseDto(token, user.getName()));
+        Map<String, String> tokens = this.tokenService.generateToken(user);
+
+        String accessToken = tokens.get("accessToken");
+        String refreshToken = tokens.get("refreshToken");
+
+        return ResponseEntity.ok(new SignInResponseDto(accessToken, refreshToken, user.getName()));
     }
 
     @GetMapping("test")
