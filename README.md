@@ -1,0 +1,1 @@
+Esse projeto e uma POC de test para aprendizado spring boot, sem preucupar com melhores praticas ou arquitetura
